@@ -1,0 +1,800 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="theme-color" content="#14213D">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+</head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column, phone first. Header with day counter, five views, fixed bottom tab bar.
+   Motif: a passport stamped day by day. Navy ink, one stamp-orange accent. */
+:root {
+  --bg: #EDF0F5;
+  --surface: #FFFFFF;
+  --surface-2: #E3E8F0;
+  --ink: #14213D;
+  --muted: #55607A;
+  --line: #CFD6E2;
+  --accent: #D9481C;
+  --accent-ink: #FFFFFF;
+  --good: #1E7A4C;
+  --bad: #B42318;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1526; --surface: #16213A; --surface-2: #1F2D4B; --ink: #E8EDF7; --muted: #9BA8C4;
+    --line: #2B3A5C; --accent: #FF8A5B; --accent-ink: #1A0E08; --good: #5FD398; --bad: #FF8A80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1526; --surface: #16213A; --surface-2: #1F2D4B; --ink: #E8EDF7; --muted: #9BA8C4;
+  --line: #2B3A5C; --accent: #FF8A5B; --accent-ink: #1A0E08; --good: #5FD398; --bad: #FF8A80;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 96px;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 680px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.mono { font-family: var(--f-mono); }
+.label { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* header */
+header.top { padding-block: 22px 8px; display: grid; gap: 14px; }
+.brand { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-size: 28px; font-weight: 700; letter-spacing: -.01em; }
+.brand .year { font-family: var(--f-mono); font-size: 13px; color: var(--accent); font-weight: 500; }
+.meter { display: grid; gap: 8px; }
+.meter-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; flex-wrap: wrap; }
+.bar { height: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; width: 0; transition: width .4s ease; }
+.sync { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+
+/* views */
+.view { display: none; padding-block: 12px 24px; gap: 16px; }
+.view.on { display: grid; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card h2 { font-size: 20px; }
+.card h3 { font-size: 17px; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+
+/* tasks */
+.task { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid var(--line); min-width: 0; }
+.task:first-of-type { border-top: 0; padding-top: 4px; }
+.task input { width: 24px; height: 24px; margin: 2px 0 0; accent-color: var(--accent); }
+.task .min { font-family: var(--f-mono); font-size: 12px; color: var(--accent); letter-spacing: .06em; }
+.task p { overflow-wrap: anywhere; }
+.task.done p { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.cmd { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--surface-2); border-radius: 12px; padding: 12px; }
+.cmd code { font-family: var(--f-mono); font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 9px 14px; min-height: 44px; font-weight: 500; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.ghost { background: transparent; }
+.btn[disabled] { opacity: .5; cursor: default; }
+
+/* word chips */
+.words { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--f-mono); font-size: 14px; background: var(--surface-2); border-radius: 8px; padding: 6px 10px; }
+
+/* plan list */
+.week { display: grid; gap: 8px; }
+.week-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.day { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; min-height: 64px; padding: 6px 2px; display: grid; justify-items: center; align-content: center; gap: 2px; }
+.day .n { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.day .d { font-family: var(--f-display); font-weight: 700; font-size: 17px; }
+.day .st { width: 22px; height: 22px; border-radius: 50%; border: 2px dashed var(--line); display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+.day.full .st { border: 2px solid var(--accent); color: var(--accent); transform: rotate(-8deg); }
+.day.part .st { border: 2px solid var(--accent); border-style: dotted; }
+.day.today { outline: 2px solid var(--ink); outline-offset: 1px; }
+.day.sel { background: var(--surface-2); }
+.day.rest .d { color: var(--muted); }
+
+.sched-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 130px); gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 10px; }
+.sched-row .form, .sched-row input { min-width: 0; }
+/* flashcards */
+.fc-wrap { display: grid; gap: 12px; }
+.fc { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; min-height: 260px; padding: 22px 18px; display: grid; align-content: center; justify-items: start; gap: 12px; text-align: left; width: 100%; }
+.fc .w { font-family: var(--f-display); font-weight: 700; font-size: 34px; overflow-wrap: anywhere; }
+.fc .pos { font-family: var(--f-mono); font-size: 13px; color: var(--accent); }
+.fc .ex { font-size: 17px; font-style: italic; overflow-wrap: anywhere; }
+.fc .hint { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > * { flex: 1 1 120px; }
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg button { flex: 1 1 auto; border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 8px 14px; min-height: 40px; font-size: 14px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.form { display: grid; gap: 10px; }
+.form label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
+.form input, .form textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-height: 44px; width: 100%; }
+
+/* quiz */
+.opts { display: grid; gap: 8px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 12px 14px; min-height: 48px; overflow-wrap: anywhere; }
+.opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--surface)); }
+.opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, var(--surface)); }
+.q { font-size: 18px; font-weight: 500; overflow-wrap: anywhere; }
+.exp { border-left: 3px solid var(--accent); padding-left: 12px; }
+.score { font-family: var(--f-display); font-size: 48px; font-weight: 700; line-height: 1; }
+
+/* stats */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.stat { background: var(--surface-2); border-radius: 12px; padding: 12px; display: grid; gap: 2px; }
+.stat b { font-family: var(--f-display); font-size: 30px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.hist { display: grid; gap: 6px; font-size: 14px; }
+.hist div { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); padding-top: 6px; font-variant-numeric: tabular-nums; }
+
+/* tab bar */
+nav.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: var(--surface); border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+}
+nav.tabs a { text-decoration: none; color: var(--muted); display: grid; justify-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; font-size: 12px; min-height: 48px; align-content: center; }
+nav.tabs a svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+nav.tabs a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: 14px; z-index: 30; max-width: calc(100% - 32px); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>IELTS Journey 2028</h1>
+      <span class="year" id="phase"></span>
+    </div>
+    <div class="meter">
+      <div class="meter-row"><span id="meterText"></span><span class="mono" id="meterPct"></span></div>
+      <div class="bar" role="progressbar" aria-label="Progres 30 hari" id="bar"><i id="barFill"></i></div>
+      <span class="sync" id="sync">Memuat progres...</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="view" id="v-hari-ini" aria-label="Hari ini"></section>
+    <section class="view" id="v-rencana" aria-label="Rencana 30 hari"></section>
+    <section class="view" id="v-kartu" aria-label="Flashcard"></section>
+    <section class="view" id="v-kuis" aria-label="Kuis"></section>
+    <section class="view" id="v-progres" aria-label="Progres"></section>
+  </main>
+</div>
+
+<nav class="tabs" aria-label="Menu utama">
+  <a href="#hari-ini" data-v="hari-ini"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>Hari Ini</a>
+  <a href="#rencana" data-v="rencana"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h9"/></svg>Rencana</a>
+  <a href="#kartu" data-v="kartu"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 12h8"/></svg>Kartu</a>
+  <a href="#kuis" data-v="kuis"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.1"/></svg>Kuis</a>
+  <a href="#progres" data-v="progres"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M21 19H3"/></svg>Progres</a>
+</nav>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+var VOCAB = [{"w": "substantial", "pos": "adj", "id": "cukup besar, signifikan", "ex": "The study provided substantial evidence.", "forms": "substantially (adv)", "tag": "academic"}, {"w": "mitigate", "pos": "v", "id": "mengurangi dampak", "ex": "Governments must mitigate the effects of climate change.", "forms": "mitigation (n)", "tag": "academic"}, {"w": "inevitable", "pos": "adj", "id": "tak terelakkan", "ex": "Some side effects are inevitable.", "forms": "inevitably (adv)", "tag": "academic"}, {"w": "ambiguous", "pos": "adj", "id": "ambigu, tidak jelas (bisa bermakna ganda)", "ex": "The instructions were ambiguous.", "forms": "ambiguity (n)", "tag": "academic"}, {"w": "contradictory", "pos": "adj", "id": "saling bertentangan", "ex": "The two reports gave contradictory results.", "forms": "contradict (v), contradiction (n)", "tag": "academic"}, {"w": "constraint", "pos": "n", "id": "kendala, pembatasan", "ex": "Limited funding is a major constraint on the project.", "forms": "constrain (v)", "tag": "academic"}, {"w": "comprehensive", "pos": "adj", "id": "menyeluruh, lengkap", "ex": "The professor gave a comprehensive review of the literature.", "forms": "comprehensively (adv)", "tag": "academic"}, {"w": "ability", "pos": "n", "id": "kemampuan", "ex": "Her ability to explain complex ideas impressed the panel.", "forms": "able (adj), enable (v)", "tag": "wordform"}, {"w": "pollution", "pos": "n", "id": "polusi, pencemaran", "ex": "Industrial pollution is a serious problem in many cities.", "forms": "pollute (v), pollutant (n)", "tag": "wordform"}, {"w": "influential", "pos": "adj", "id": "berpengaruh", "ex": "Education is one of the most influential factors in a country's development.", "forms": "influence (n, v)", "tag": "wordform"}, {"w": "raise awareness", "pos": "collocation", "id": "meningkatkan kesadaran (bukan 'rise')", "ex": "The campaign aims to raise awareness of mental health.", "forms": "awareness (n), aware (adj)", "tag": "collocation"}, {"w": "do research", "pos": "collocation", "id": "melakukan penelitian (bukan 'make' atau 'take')", "ex": "We need to do more research on this topic.", "forms": "researcher (n)", "tag": "collocation"}, {"w": "a body of evidence", "pos": "collocation", "id": "sekumpulan bukti", "ex": "There is a growing body of evidence that sleep affects memory.", "forms": "evidence (n, tidak bisa dihitung)", "tag": "collocation"}, {"w": "shed light on", "pos": "phrase", "id": "menjelaskan, menyingkap", "ex": "The new data shed light on the causes of the problem.", "forms": "-", "tag": "collocation"}, {"w": "significant", "pos": "adj", "id": "penting, bermakna", "ex": "There was a significant increase in student numbers.", "forms": "significance (n), significantly (adv)", "tag": "academic"}, {"w": "evidence", "pos": "n", "id": "bukti (tidak bisa dihitung, tanpa -s)", "ex": "There is little evidence to support this claim.", "forms": "evident (adj)", "tag": "academic"}, {"w": "analyse", "pos": "v", "id": "menganalisis", "ex": "Researchers analysed data from 2,000 students.", "forms": "analysis (n), analyst (n)", "tag": "academic"}, {"w": "achieve", "pos": "v", "id": "mencapai", "ex": "She achieved her goal of studying abroad.", "forms": "achievement (n)", "tag": "academic"}, {"w": "approach", "pos": "n", "id": "pendekatan", "ex": "A blended approach combines online and face-to-face lessons.", "forms": "approach (v)", "tag": "academic"}, {"w": "assume", "pos": "v", "id": "menganggap, mengasumsikan", "ex": "Many people assume that online study is easier.", "forms": "assumption (n)", "tag": "academic"}, {"w": "benefit", "pos": "n", "id": "manfaat", "ex": "One benefit of remote learning is flexibility.", "forms": "beneficial (adj), benefit (v)", "tag": "academic"}, {"w": "concept", "pos": "n", "id": "konsep", "ex": "The concept of leadership differs between cultures.", "forms": "conceptual (adj)", "tag": "academic"}, {"w": "consistent", "pos": "adj", "id": "konsisten, ajeg", "ex": "Consistent practice leads to better fluency.", "forms": "consistency (n), consistently (adv)", "tag": "academic"}, {"w": "contribute", "pos": "v", "id": "berkontribusi, menyumbang", "ex": "Exercise can contribute to better mental health.", "forms": "contribution (n)", "tag": "academic"}, {"w": "demonstrate", "pos": "v", "id": "menunjukkan, membuktikan", "ex": "The results demonstrate that the method works.", "forms": "demonstration (n)", "tag": "academic"}, {"w": "emphasise", "pos": "v", "id": "menekankan", "ex": "The lecturer emphasised the importance of critical thinking.", "forms": "emphasis (n)", "tag": "academic"}, {"w": "factor", "pos": "n", "id": "faktor", "ex": "Cost is an important factor when choosing a university.", "forms": "-", "tag": "academic"}, {"w": "impact", "pos": "n", "id": "dampak", "ex": "Social media has an impact on young people.", "forms": "impact (v)", "tag": "academic"}, {"w": "indicate", "pos": "v", "id": "menunjukkan, mengindikasikan", "ex": "The survey indicates that most students feel stressed.", "forms": "indication (n), indicator (n)", "tag": "academic"}, {"w": "issue", "pos": "n", "id": "isu, masalah", "ex": "Climate change is a global issue.", "forms": "-", "tag": "academic"}, {"w": "maintain", "pos": "v", "id": "mempertahankan, memelihara", "ex": "It is hard to maintain motivation over a long period.", "forms": "maintenance (n)", "tag": "academic"}, {"w": "obtain", "pos": "v", "id": "memperoleh", "ex": "Students must obtain a visa before they travel.", "forms": "-", "tag": "academic"}, {"w": "occur", "pos": "v", "id": "terjadi", "ex": "Most errors occur when people are tired.", "forms": "occurrence (n)", "tag": "academic"}, {"w": "participate", "pos": "v", "id": "berpartisipasi, ikut serta", "ex": "Students are encouraged to participate in class discussions.", "forms": "participation (n), participant (n)", "tag": "academic"}, {"w": "relevant", "pos": "adj", "id": "relevan", "ex": "Choose examples that are relevant to the topic.", "forms": "relevance (n)", "tag": "academic"}, {"w": "require", "pos": "v", "id": "memerlukan, mensyaratkan", "ex": "The scholarship requires a minimum IELTS score.", "forms": "requirement (n)", "tag": "academic"}, {"w": "sufficient", "pos": "adj", "id": "cukup", "ex": "Eight hours of sleep is sufficient for most adults.", "forms": "insufficient (adj), sufficiently (adv)", "tag": "academic"}, {"w": "tend to", "pos": "phrase", "id": "cenderung", "ex": "Students tend to remember what they use often.", "forms": "tendency (n)", "tag": "collocation"}, {"w": "widespread", "pos": "adj", "id": "tersebar luas", "ex": "Online learning became widespread after 2020.", "forms": "-", "tag": "academic"}, {"w": "undergo", "pos": "v", "id": "menjalani, mengalami", "ex": "New staff undergo a week of training.", "forms": "undergone (V3)", "tag": "academic"}, {"w": "fundamental", "pos": "adj", "id": "mendasar", "ex": "Grammar is fundamental to clear writing.", "forms": "fundamentally (adv)", "tag": "academic"}, {"w": "viable", "pos": "adj", "id": "layak, dapat dijalankan", "ex": "Blended learning is a viable option for many universities.", "forms": "viability (n)", "tag": "academic"}, {"w": "crucial", "pos": "adj", "id": "sangat penting", "ex": "Practice plays a crucial role in language learning.", "forms": "crucially (adv)", "tag": "academic"}, {"w": "outcome", "pos": "n", "id": "hasil, luaran", "ex": "The outcome of the study surprised the researchers.", "forms": "-", "tag": "academic"}, {"w": "priority", "pos": "n", "id": "prioritas", "ex": "Speaking practice is my top priority this month.", "forms": "prioritise (v)", "tag": "academic"}, {"w": "perspective", "pos": "n", "id": "sudut pandang", "ex": "Studying abroad gives you a new perspective on your own culture.", "forms": "-", "tag": "academic"}, {"w": "reinforce", "pos": "v", "id": "memperkuat", "ex": "Regular review reinforces what you have learned.", "forms": "reinforcement (n)", "tag": "academic"}, {"w": "adequate", "pos": "adj", "id": "memadai", "ex": "The library did not have adequate resources.", "forms": "adequately (adv), inadequate (adj)", "tag": "academic"}, {"w": "attitude", "pos": "n", "id": "sikap", "ex": "A positive attitude towards mistakes helps you improve.", "forms": "-", "tag": "academic"}, {"w": "trend", "pos": "n", "id": "tren, kecenderungan", "ex": "There is a growing trend towards online study.", "forms": "trendy (adj, informal)", "tag": "academic"}];
+var START = new Date(2026, 10, 9); // Senin 9 Nov 2026 = hari 1
+var TOTAL = 30;
+var DOW = ["Sen","Sel","Rab","Kam","Jum","Sab","Min"];
+var MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+
+/* ---------- Rencana: konten per minggu ---------- */
+var WEEKS = [
+  {theme:"Tenses inti dan word forms", phase:"Tahap 1 · Minggu 1"},
+  {theme:"Passive, modal, agreement, collocation", phase:"Tahap 1 · Minggu 2"},
+  {theme:"Relative clause, conditional, academic words", phase:"Tahap 1 · Minggu 3"},
+  {theme:"Kalimat kompleks dan penghubung", phase:"Tahap 1 · Minggu 4"}
+];
+var GRAM = [
+  {t:"Tiga tenses lampau", a:"Pelajari past simple, present perfect, past perfect (tabel di pelajaran pertama). Tulis 3 contoh tentang kegiatan BEM.", b:"Kuis Grammar filter Tenses di tab Kuis. Tulis ulang kalimat yang salah dengan versi benar.", c:"Flashcard: 5 kata hari ini, fokus word form (able, ability)."},
+  {t:"Passive voice dan modal perfect", a:"Pelajari passive (be + V3) di semua tense, dan should have / must have / can't have + V3. Kenali kata uncountable: information, research, evidence.", b:"Kuis Grammar filter Passive, Modal, dan Agreement. Ubah 5 kalimat aktif jadi passive.", c:"Flashcard: collocation (do research, raise awareness, a body of evidence)."},
+  {t:"Relative clause dan conditional", a:"Pelajari who, which, whose, that. Lalu conditional tipe 1, 2, 3 dan wish + had V3.", b:"Kuis Grammar filter Relative dan Conditional. Gabungkan 5 pasang kalimat dengan relative clause.", c:"Flashcard: academic words, buat 1 kalimat sendiri per kata."},
+  {t:"Kalimat kompleks dan penghubung", a:"Pelajari however, therefore, although, while, for example, as a result. Pelajari inversi: Not only did..., Hardly had...", b:"Kuis Grammar campuran semua topik. Tulis 5 kalimat kompleks memakai penghubung.", c:"Review semua kata minggu ini, cari sinonim 5 kata."}
+];
+var LIST = [
+  {t:"Listening: aksen British dan gist", a:"Dengarkan 1 episode 6 Minute English (bbc.co.uk/learningenglish) sekali, tanpa transkrip. Catat kata kunci.", b:"Tulis ringkasan 3 kalimat dan 2 alasan yang disebut pembicara. Dengarkan ulang, tandai bagian yang terlewat.", c:"Buka transkrip, kumpulkan 5 kata yang terdengar asing. Ucapkan keras-keras 1 menit (shadowing)."},
+  {t:"Listening: angka, nama, alasan", a:"Pilih rekaman BBC Learning English 3-5 menit. Dengar sekali, catat semua angka, nama, dan alasan.", b:"Jawab 5 pertanyaan buatanmu sendiri (apa, siapa, berapa, kenapa) tanpa melihat transkrip.", c:"Cek dengan transkrip. Catat pola salah dengar, misalnya thirteen dan thirty."},
+  {t:"Listening: note completion", a:"Dengarkan rekaman dan buat catatan dengan kolom Topik, Angka, Alasan, Contoh.", b:"Lengkapi ringkasan 5 poin dari catatanmu, 1-3 kata per isian seperti soal IELTS.", c:"Dengar ulang bagian terlewat. Catat kata pengecoh yang membuatmu salah."},
+  {t:"Listening: sesi panjang tanpa jeda", a:"Dengarkan rekaman 5-6 menit tanpa menjeda. Catat poin utama.", b:"Ringkas dalam bahasa Inggris 4-5 kalimat, sertakan argumen pembicara.", c:"Kirim ringkasan ke Claude (LATIHAN LISTENING) dan catat 3 kata baru."}
+];
+var READ = [
+  {t:"Reading: skimming ide utama", a:"Skimming: baca judul, kalimat pertama tiap paragraf, dan kesimpulan. Tulis ide utama sebelum membaca detail.", b:"Minta Claude: LATIHAN READING. Kerjakan 1 passage, 12 menit.", c:"Pilih 5 kata baru dari passage, tulis word form-nya."},
+  {t:"Reading: True / False / Not Given", a:"Pelajari aturan: True = sesuai, False = bertentangan, Not Given = tidak disebut. Waspada kata only, all, always, never.", b:"Minta Claude: LATIHAN READING (True/False/Not Given). Garis bawahi kalimat bukti untuk tiap jawaban.", c:"Tulis ulang 2 soal yang salah: kenapa jawabanmu keliru?"},
+  {t:"Reading: matching headings", a:"Pelajari cara: tandai ide utama tiap paragraf dengan 3-4 kata, lalu cocokkan dengan heading.", b:"Minta Claude: LATIHAN READING (matching headings), 15 menit.", c:"Review kata baru dan buat 1 kalimat untuk tiap kata."},
+  {t:"Reading: passage dengan waktu", a:"Baca 1 passage akademik dari BBC Learning English atau British Council LearnEnglish, tanpa kamus.", b:"Kerjakan 8 soal dari Claude dalam 15 menit. Catat waktu per soal.", c:"Analisis kesalahan: salah paham kata, salah baca soal, atau waktu habis?"}
+];
+var SPEAK = [
+  {t:"Speaking Part 1: kalimat dengan tense benar", a:"Perbaiki kalimat dari diagnostic: I am in my seventh semester, I want to travel around the world, I was inspired by him.", b:"Rekam 3 jawaban Part 1 (30 detik), ketik transkrip, lalu kirim ke Claude (LATIHAN SPEAKING).", c:"Ucapkan versi perbaikan 3 kali. Rekam ulang satu jawaban dan bandingkan."},
+  {t:"Speaking Part 2: cue card lengkap", a:"Pelajari 4 bagian cue card: siapa, bagaimana kenal, bagaimana membantu, kenapa penting. Jangan lupa bagian why.", b:"Rekam 1 menit tentang orang yang menginspirasimu, ketik transkrip, kirim ke Claude.", c:"Latih paraphrase: jelaskan 5 kata yang lupa dengan kata lain, jangan berhenti."},
+  {t:"Speaking Part 3: poin, alasan, contoh", a:"Pelajari pola Point, Reason, Example, Point. Contoh: I think... because... For example...", b:"Jawab 3 pertanyaan diskusi (Education, Technology, Leadership) dengan pola itu, 45 detik tiap jawaban.", c:"Kirim transkrip ke Claude. Catat 3 frasa penghubung baru."},
+  {t:"Speaking: simulasi Part 1-2-3", a:"Siapkan 1 topik tentang BEM dan kepemimpinan dalam 3 bentuk: Part 1, Part 2, Part 3.", b:"Simulasi penuh 8 menit bersama Claude (LATIHAN SPEAKING).", c:"Tulis 3 kesalahan yang paling sering muncul dan target perbaikannya."}
+];
+var WRITE = [
+  {t:"Writing: satu paragraf rapi", a:"Pelajari struktur paragraf: kalimat topik, penjelasan, contoh, penutup. Tanpa sapaan seperti Hello everyone.", b:"Tulis 1 paragraf 80-100 kata tentang manfaat organisasi mahasiswa. Satu kali tulis, tanpa kamus.", c:"Kirim ke Claude (LATIHAN WRITING). Catat 3 kesalahan utama di buku koreksi."},
+  {t:"Writing: dua paragraf dan connectors", a:"Pelajari penghubung: firstly, however, for example, as a result. Tulis kerangka 2 paragraf.", b:"Tulis 2 paragraf (120 kata): satu sisi pro dan satu sisi kontra tentang belajar online.", c:"Kirim ke Claude. Ganti 3 kata yang diulang dengan sinonim."},
+  {t:"Writing: paragraf opini dengan relative clause", a:"Pelajari cara menyatakan opini: In my view, I believe that. Tulis 3 kalimat memakai who/which/whose.", b:"Tulis 1 paragraf opini 100-120 kata dengan alasan dan satu contoh nyata.", c:"Kirim ke Claude. Tulis versi revisimu sendiri sebelum melihat versi Claude."},
+  {t:"Writing: esai singkat dengan PEEL", a:"Pelajari PEEL: Point, Explain, Example, Link. Susun kerangka esai Task 2 (4 paragraf).", b:"Tulis esai 150 kata dalam 25 menit. Soal dari Claude (LATIHAN WRITING).", c:"Kirim ke Claude dan baca estimasi band beserta alasannya. Catat 1 target perbaikan."}
+];
+var SAT = [
+  "Evaluasi mingguan: minta Claude EVALUASI MINGGUAN. Isinya tes grammar, vocabulary, listening, reading, writing, speaking.",
+  "Review catatan kesalahan minggu ini. Tandai 3 kesalahan yang paling sering.",
+  "Tulis target minggu depan (maksimal 3 butir) dan simpan skor evaluasi di tab Progres."
+];
+var SUN = [
+  "Hari istirahat. Tidak ada kewajiban.",
+  "Kalau mau, tonton atau dengarkan konten bahasa Inggris 20-30 menit, apa saja yang kamu suka.",
+  "Tidak perlu mencatat apa pun."
+];
+
+/* Jadwal kuliah dan saran jam belajar (jam bisa diubah di tab Rencana) */
+var SCHED = [
+  {k:"Tidak ada kuliah", t:"07.00-08.00"},
+  {k:"Kuliah 08.00-13.00", t:"19.30-20.30"},
+  {k:"Kuliah 10.30-14.00", t:"07.00-08.00"},
+  {k:"Kuliah 13.00-15.30", t:"07.00-08.00"},
+  {k:"Tidak ada kuliah", t:"07.00-08.00"},
+  {k:"Tidak ada kuliah", t:"07.00-08.00"},
+  {k:"Libur", t:"Bebas"}
+];
+var SCHED_WHO = ["Dengan Claude","Mandiri","Mandiri","Dengan Claude","Dengan Claude","Dengan Claude","Istirahat"];
+function timeFor(dow) { return (state.times && state.times[dow]) || SCHED[dow].t; }
+
+function lessonFor(day) {
+  var w = Math.min(3, Math.floor((day - 1) / 7));
+  var dow = (day - 1) % 7;
+  if (day > 28) {
+    return {day:day, week:3, dow:dow, title: day === 29 ? "Review besar bulan pertama" : "Penutup dan laporan bulanan",
+      min:[20,25,15],
+      tasks: day === 29
+        ? ["Ulangi 3 topik grammar yang paling sering salah di buku koreksi.","Kuis campuran 20 soal di tab Kuis, lalu perbaiki yang salah.","Ulangi semua flashcard yang belum hafal."]
+        : ["Minta Claude: MONTHLY REPORT. Siapkan skor evaluasi 4 minggu dan catatan kesalahan.","Kerjakan 1 tugas Writing pendek (PEEL) sebagai perbandingan dengan diagnostic.","Minta Claude: EXPORT PROGRESS dan simpan hasilnya."],
+      cmd: day === 29 ? "ULANGI MATERI" : "MONTHLY REPORT", rest:false};
+  }
+  var out = {day:day, week:w, dow:dow, min:[20,25,15], rest:false};
+  if (dow === 0) { var g = GRAM[w]; out.title = "Grammar: " + g.t; out.tasks = [g.a, g.b, g.c]; out.cmd = "MULAI BELAJAR"; }
+  else if (dow === 1) { var l = LIST[w]; out.title = l.t; out.tasks = [l.a, l.b, l.c]; out.cmd = "LATIHAN LISTENING"; }
+  else if (dow === 2) { var r = READ[w]; out.title = r.t; out.tasks = [r.a, r.b, r.c]; out.cmd = "LATIHAN READING"; }
+  else if (dow === 3) { var s = SPEAK[w]; out.title = s.t; out.tasks = [s.a, s.b, s.c]; out.cmd = "LATIHAN SPEAKING"; }
+  else if (dow === 4) { var wr = WRITE[w]; out.title = wr.t; out.tasks = [wr.a, wr.b, wr.c]; out.cmd = "LATIHAN WRITING"; }
+  else if (dow === 5) { out.title = "Evaluasi mingguan"; out.tasks = SAT; out.cmd = "EVALUASI MINGGUAN"; }
+  else { out.title = "Istirahat"; out.tasks = SUN; out.cmd = ""; out.rest = true; }
+  return out;
+}
+function dateOf(day) { var d = new Date(START.getTime()); d.setDate(d.getDate() + day - 1); return d; }
+function fmt(d) { return d.getDate() + " " + MONTHS[d.getMonth()]; }
+function iso(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function todayDay() {
+  var n = new Date(); n.setHours(0,0,0,0);
+  return Math.round((n.getTime() - START.getTime()) / 86400000) + 1;
+}
+function wordsForDay(day) {
+  var out = []; var base = ((day - 1) * 5) % VOCAB.length;
+  for (var i = 0; i < 5; i++) out.push(VOCAB[(base + i) % VOCAB.length]);
+  return out;
+}
+
+/* ---------- Kuis grammar ---------- */
+var GQ = [
+ {tag:"Tenses", q:"When I reached the station, the train ______.", o:["already left","has already left","had already left","was already leaving"], a:2, e:"Ada dua kejadian lampau. Yang terjadi lebih dulu memakai past perfect (had + V3)."},
+ {tag:"Tenses", q:"I ______ the report yesterday.", o:["have finished","finished","had finished","finish"], a:1, e:"Ada kata waktu yang jelas (yesterday), jadi past simple."},
+ {tag:"Tenses", q:"She ______ in Jakarta since 2020.", o:["lived","has lived","had lived","lives"], a:1, e:"since + titik waktu dan masih berlangsung sampai sekarang: present perfect."},
+ {tag:"Tenses", q:"By the time the meeting started, everyone ______.", o:["arrived","has arrived","had arrived","arrives"], a:2, e:"Kedatangan terjadi sebelum rapat mulai: past perfect."},
+ {tag:"Tenses", q:"By next year, I ______ for this scholarship for three years.", o:["will prepare","am preparing","will have been preparing","have prepared"], a:2, e:"Durasi sampai satu titik di masa depan: future perfect continuous."},
+ {tag:"Agreement", q:"The number of international students ______ increased over the past decade.", o:["have","has","are","were"], a:1, e:"The number of + kata benda jamak memakai kata kerja tunggal. (A number of memakai jamak.)"},
+ {tag:"Agreement", q:"The information he gave us ______ very useful.", o:["were","was","are","have been"], a:1, e:"Information tidak bisa dihitung, jadi memakai kata kerja tunggal dan tanpa -s."},
+ {tag:"Agreement", q:"Which sentence is correct?", o:["We need more researches on this topic.","We need more research on this topic.","We need a research on this topic.","We need many researches on this topic."], a:1, e:"Research (sebagai penelitian pada umumnya) tidak bisa dihitung: more research."},
+ {tag:"Passive", q:"The results ______ by the team last week.", o:["announced","were announced","have announced","announcing"], a:1, e:"Hasil yang diumumkan (bukan mengumumkan): passive past simple, were + V3."},
+ {tag:"Passive", q:"A new policy ______ by the government recently.", o:["has introduced","has been introduced","was introduce","is introducing"], a:1, e:"Passive present perfect: has/have been + V3."},
+ {tag:"Passive", q:"The report ______ by the committee before the deadline last week.", o:["reviewed","was reviewing","had been reviewed","has reviewing"], a:2, e:"Passive past perfect: kejadian sebelum deadline, had been + V3."},
+ {tag:"Modal", q:"You ______ told me earlier. I could have helped you.", o:["should have","should","must","can have"], a:0, e:"should have + V3 = seharusnya (tapi tidak dilakukan)."},
+ {tag:"Modal", q:"He ______ be at home. His car is outside.", o:["must","can't","shouldn't","mustn't"], a:0, e:"Kesimpulan logis yang kuat: must be."},
+ {tag:"Modal", q:"She didn't answer her phone. She ______ asleep.", o:["must have been","must be been","should been","may been"], a:0, e:"Kesimpulan tentang masa lalu: must have + V3."},
+ {tag:"Relative", q:"She is the researcher ______ study was published in Nature.", o:["who","which","whose","whom"], a:2, e:"whose menunjukkan kepemilikan: studi milik peneliti itu."},
+ {tag:"Relative", q:"The book ______ I borrowed from the library was excellent.", o:["who","whose","which","whom"], a:2, e:"Untuk benda gunakan which (atau that)."},
+ {tag:"Relative", q:"Dr. Lee is a professor ______ teaches at Oxford University.", o:["who","whose","which","whom"], a:0, e:"Untuk orang sebagai subjek gunakan who."},
+ {tag:"Conditional", q:"If it rains tomorrow, we ______ the trip.", o:["cancel","will cancel","would cancel","cancelled"], a:1, e:"Conditional tipe 1: If + present, will + V1."},
+ {tag:"Conditional", q:"If I were you, I ______ apply for that scholarship.", o:["will","would","would have","am"], a:1, e:"Conditional tipe 2: If + past, would + V1."},
+ {tag:"Conditional", q:"If I ______ more time, I would have joined the research project.", o:["have","had had","would have","has had"], a:1, e:"Conditional tipe 3: If + had + V3, would have + V3."},
+ {tag:"Conditional", q:"I wish I ______ English more regularly when I was at university.", o:["practise","practised","had practised","would practise"], a:2, e:"Penyesalan tentang masa lalu: wish + had + V3."},
+ {tag:"Connectors", q:"Despite ______ the heavy rain, the event went ahead.", o:["of","the","from","to"], a:1, e:"Despite tanpa of: Despite the heavy rain. (In spite of memakai of.)"},
+ {tag:"Connectors", q:"Not only ______ the exam, but she also won a scholarship.", o:["she passed","did she pass","she did pass","passed she"], a:1, e:"Setelah Not only di awal kalimat, susunan dibalik: did she pass."},
+ {tag:"Connectors", q:"Hardly ______ the office when it started to rain.", o:["I had left","had I left","I left","did I leave"], a:1, e:"Hardly di awal kalimat diikuti inversi: had I left."},
+ {tag:"Connectors", q:"Online study is flexible. ______, it can make students feel isolated.", o:["Therefore","However","For example","Moreover"], a:1, e:"Dua ide yang berlawanan dihubungkan dengan However."}
+];
+var GTAGS = ["Semua","Tenses","Agreement","Passive","Modal","Relative","Conditional","Connectors"];
+
+/* ---------- State ---------- */
+var LS_KEY = "ielts-journey-hub-v1";
+var state = {checks:{}, log:{}, cards:{}, quiz:[], extra:[], updated:0};
+var dbDoc = null, dbMode = "local";
+function loadLocal() {
+  try { var raw = localStorage.getItem(LS_KEY); if (raw) { var s = JSON.parse(raw); if (s && typeof s === "object") { state = Object.assign({checks:{}, log:{}, cards:{}, quiz:[], extra:[], updated:0}, s); } } } catch (e) {}
+}
+var saveTimer = null;
+function save() {
+  state.updated = Date.now();
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  if (dbDoc) { clearTimeout(saveTimer); saveTimer = setTimeout(pushDb, 800); }
+  paintSync();
+}
+function pushDb() {
+  if (!dbDoc) return;
+  dbDoc.set({state: JSON.stringify(state), updated: state.updated}).then(function () { dbMode = "db"; paintSync(); }, function () { dbMode = "local"; paintSync(); });
+}
+function paintSync() {
+  var el = document.getElementById("sync");
+  el.textContent = dbMode === "db" ? "Tersimpan di akunmu, ikut ke HP lain." : "Tersimpan di browser ini saja.";
+}
+function logToday() { state.log[iso(new Date())] = true; }
+function allCards() { return VOCAB.concat(state.extra || []); }
+
+/* ---------- Helpers ---------- */
+var $ = function (id) { return document.getElementById(id); };
+function el(tag, attrs, kids) {
+  var n = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(function (k) {
+    if (attrs[k] === null || attrs[k] === undefined) return;
+    if (k === "text") n.textContent = attrs[k];
+    else if (k === "class") n.className = attrs[k];
+    else if (k.slice(0,2) === "on") n.addEventListener(k.slice(2), attrs[k]);
+    else n.setAttribute(k, attrs[k]);
+  });
+  (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+  return n;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+var toastTimer;
+function toast(msg) { var t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2200); }
+function copyText(txt) {
+  try {
+    navigator.clipboard.writeText(txt).then(function () { toast("Disalin: " + txt); }, function () { fallbackCopy(txt); });
+  } catch (e) { fallbackCopy(txt); }
+}
+function fallbackCopy(txt) {
+  var ta = el("textarea", {"aria-hidden":"true"}); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+  var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta); toast(ok ? "Disalin: " + txt : "Salin manual: " + txt);
+}
+function speak(text) {
+  try {
+    if (!("speechSynthesis" in window)) { toast("Suara tidak tersedia di browser ini."); return; }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text); u.lang = "en-GB"; u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  } catch (e) { toast("Suara tidak tersedia di browser ini."); }
+}
+function dayStatus(day) {
+  var n = 0; for (var i = 0; i < 3; i++) if (state.checks["d" + day + "-" + i]) n++;
+  return n;
+}
+function streak() {
+  var d = new Date(); d.setHours(0,0,0,0);
+  var s = 0, guard = 0;
+  if (!state.log[iso(d)]) d.setDate(d.getDate() - 1);
+  while (guard++ < 400) {
+    var wd = (d.getDay() + 6) % 7; // 0=Senin
+    if (state.log[iso(d)]) s++;
+    else if (wd !== 6) break;
+    d.setDate(d.getDate() - 1);
+  }
+  return s;
+}
+
+/* ---------- Header ---------- */
+var viewDay = 1;
+function paintHeader() {
+  var td = todayDay();
+  var done = 0; for (var d = 1; d <= TOTAL; d++) if (dayStatus(d) === 3) done++;
+  var pct = Math.round(done / TOTAL * 100);
+  $("meterText").textContent = td < 1 ? "Mulai Senin, 9 Nov" : (td > TOTAL ? "30 hari selesai" : "Hari ke-" + td + " dari 30");
+  $("meterPct").textContent = done + "/30 hari lengkap";
+  $("barFill").style.width = pct + "%";
+  $("bar").setAttribute("aria-valuenow", String(pct));
+  var w = Math.min(3, Math.floor((Math.min(Math.max(td,1), TOTAL) - 1) / 7));
+  $("phase").textContent = WEEKS[w].phase;
+}
+
+/* ---------- View: Hari Ini ---------- */
+function renderToday() {
+  var root = $("v-hari-ini"); clear(root);
+  var td = todayDay();
+  if (!viewDay || viewDay < 1 || viewDay > TOTAL) viewDay = Math.min(Math.max(td, 1), TOTAL);
+  var L = lessonFor(viewDay);
+  var dt = dateOf(viewDay);
+  var head = el("div", {class:"card"}, [
+    el("span", {class:"label", text: "Hari " + viewDay + " · " + DOW[L.dow] + ", " + fmt(dt)}),
+    el("h2", {text: L.title}),
+    el("p", {class:"muted small", text: WEEKS[L.week].theme}),
+    el("p", {class:"small", text: "Jam belajar: " + timeFor(L.dow) + " · " + SCHED[L.dow].k + " · " + SCHED_WHO[L.dow]})
+  ]);
+  if (td < 1 && viewDay === 1) head.appendChild(el("p", {class:"small", text:"Perjalanan dimulai Senin, 9 Nov 2026. Kamu boleh mencoba hari 1 lebih awal."}));
+  root.appendChild(head);
+
+  var tasks = el("div", {class:"card"});
+  tasks.appendChild(el("h3", {text: L.rest ? "Santai saja" : "Satu jam, tiga blok"}));
+  var labels = L.rest ? ["Istirahat","Opsional","Bebas"] : ["20 menit · materi","25 menit · praktik","15 menit · review"];
+  L.tasks.forEach(function (t, i) {
+    var key = "d" + viewDay + "-" + i;
+    var cb = el("input", {type:"checkbox", id:"cb-" + key, "aria-label": labels[i]});
+    cb.checked = !!state.checks[key];
+    var row = el("label", {class:"task" + (cb.checked ? " done" : ""), for:"cb-" + key}, [cb, el("div", null, [el("div", {class:"min", text: labels[i]}), el("p", {text: t})])]);
+    cb.addEventListener("change", function () {
+      state.checks[key] = cb.checked; if (cb.checked) logToday();
+      row.className = "task" + (cb.checked ? " done" : "");
+      save(); paintHeader();
+      if (dayStatus(viewDay) === 3 && cb.checked) toast("Hari " + viewDay + " lengkap. Satu stempel untukmu.");
+    });
+    tasks.appendChild(row);
+  });
+  root.appendChild(tasks);
+
+  if (L.cmd) {
+    root.appendChild(el("div", {class:"card"}, [
+      el("h3", {text:"Lanjutkan bersama Claude"}),
+      el("p", {class:"small muted", text:"Bagian yang butuh koreksi dan percakapan dikerjakan di chat Claude. Salin perintahnya lalu kirim."}),
+      el("div", {class:"cmd"}, [el("code", {text: L.cmd}), el("button", {class:"btn primary", type:"button", text:"Salin", onclick:function(){ copyText(L.cmd); }})])
+    ]));
+  }
+
+  if (!L.rest) {
+    var ws = wordsForDay(viewDay);
+    var round = Math.floor((viewDay - 1) / 10) + 1;
+    var wc = el("div", {class:"card"}, [
+      el("h3", {text:"5 kata hari ini"}),
+      el("p", {class:"small muted", text:"Putaran ke-" + round + ". Kata yang sama kembali tiap 10 hari agar menempel."}),
+      el("div", {class:"words"}, ws.map(function (w) { return el("span", {class:"chip", text:w.w}); })),
+      el("button", {class:"btn", type:"button", text:"Buka flashcard", onclick:function(){ location.hash = "#kartu"; }})
+    ]);
+    root.appendChild(wc);
+  }
+  var nav = el("div", {class:"row"}, [
+    el("button", {class:"btn ghost", type:"button", text:"Hari sebelumnya", disabled: viewDay <= 1 ? "" : null, onclick:function(){ viewDay = Math.max(1, viewDay - 1); renderToday(); }}),
+    el("button", {class:"btn ghost", type:"button", text:"Hari berikutnya", disabled: viewDay >= TOTAL ? "" : null, onclick:function(){ viewDay = Math.min(TOTAL, viewDay + 1); renderToday(); }})
+  ]);
+  root.appendChild(nav);
+}
+
+/* ---------- View: Rencana ---------- */
+function renderPlan() {
+  var root = $("v-rencana"); clear(root);
+  var td = todayDay();
+  var intro = el("div", {class:"card"}, [
+    el("h2", {text:"Rencana 30 hari"}),
+    el("p", {class:"small muted", text:"9 November sampai 8 Desember 2026. Ketuk satu hari untuk membukanya."})
+  ]);
+  root.appendChild(intro);
+  var sc = el("div", {class:"card form"}, [
+    el("h3", {text:"Jadwal mingguan"}),
+    el("p", {class:"small muted", text:"Jam belajar tiap hari menyesuaikan jadwal kuliahmu. Ubah jam di kolom jika perlu, otomatis tersimpan."})
+  ]);
+  for (var k = 0; k < 7; k++) (function (k) {
+    var inp = el("input", {id:"tm-" + k, type:"text", value: timeFor(k), autocomplete:"off", "aria-label":"Jam belajar " + DOW[k]});
+    inp.addEventListener("change", function () {
+      state.times = state.times || {};
+      state.times[k] = inp.value.trim() || SCHED[k].t;
+      save(); toast("Jam " + DOW[k] + " tersimpan.");
+    });
+    sc.appendChild(el("div", {class:"sched-row"}, [
+      el("div", null, [el("b", {text:DOW[k]}), el("div", {class:"small muted", text: SCHED[k].k + " · " + SCHED_WHO[k]})]),
+      inp
+    ]));
+  })(k);
+  root.appendChild(sc);
+  for (var w = 0; w < 5; w++) {
+    var first = w * 7 + 1; var last = Math.min(TOTAL, first + 6);
+    var title = w < 4 ? "Minggu " + (w + 1) + " · " + WEEKS[w].theme : "Penutup";
+    var card = el("div", {class:"card week"}, [
+      el("div", {class:"week-head"}, [el("h3", {text:title}), el("span", {class:"label", text: fmt(dateOf(first)) + " - " + fmt(dateOf(last))})])
+    ]);
+    var grid = el("div", {class:"days"});
+    for (var d = first; d <= last; d++) (function (d) {
+      var L = lessonFor(d); var st = dayStatus(d);
+      var cls = "day" + (st === 3 ? " full" : st > 0 ? " part" : "") + (d === td ? " today" : "") + (L.rest ? " rest" : "");
+      var b = el("button", {class:cls, type:"button", "aria-label":"Hari " + d + ", " + L.title, onclick:function(){ viewDay = d; location.hash = "#hari-ini"; renderToday(); }}, [
+        el("span", {class:"n", text: DOW[L.dow]}), el("span", {class:"d", text:String(dateOf(d).getDate())}),
+        el("span", {class:"st", text: st === 3 ? "OK" : ""})
+      ]);
+      grid.appendChild(b);
+    })(d);
+    card.appendChild(grid);
+    if (w < 4) {
+      card.appendChild(el("p", {class:"small muted", text:"Sabtu: evaluasi mingguan bersama Claude."}));
+    } else {
+      card.appendChild(el("p", {class:"small muted", text:"Hari 29 review besar, hari 30 laporan bulanan."}));
+    }
+    root.appendChild(card);
+  }
+}
+
+/* ---------- View: Kartu ---------- */
+var fc = {filter:"belum", idx:0, flipped:false, order:[]};
+function cardLevel(w) { return state.cards[w] || 0; }
+function fcList() {
+  var all = allCards();
+  if (fc.filter === "hari") { var ws = wordsForDay(Math.min(Math.max(todayDay(),1),TOTAL)).map(function (x) { return x.w; }); return all.filter(function (c) { return ws.indexOf(c.w) >= 0; }); }
+  if (fc.filter === "belum") return all.filter(function (c) { return cardLevel(c.w) < 2; });
+  return all.slice();
+}
+function renderCards() {
+  var root = $("v-kartu"); clear(root);
+  var list = fcList();
+  var known = allCards().filter(function (c) { return cardLevel(c.w) >= 2; }).length;
+  var top = el("div", {class:"card"}, [
+    el("h2", {text:"Flashcard"}),
+    el("p", {class:"small muted", text: known + " dari " + allCards().length + " kata sudah kamu tandai hafal."}),
+    el("div", {class:"seg", role:"group", "aria-label":"Filter kartu"}, [["belum","Belum hafal"],["hari","Kata hari ini"],["semua","Semua"]].map(function (f) {
+      return el("button", {type:"button", text:f[1], "aria-pressed": String(fc.filter === f[0]), onclick:function(){ fc.filter = f[0]; fc.idx = 0; fc.flipped = false; renderCards(); }});
+    }))
+  ]);
+  root.appendChild(top);
+  if (!list.length) {
+    root.appendChild(el("div", {class:"card"}, [el("h3", {text:"Tidak ada kartu di filter ini"}), el("p", {class:"small muted", text:"Semua kata sudah hafal, atau filter kosong. Pilih Semua untuk mengulang."})]));
+  } else {
+    if (fc.idx >= list.length) fc.idx = 0;
+    var c = list[fc.idx];
+    var face = fc.flipped
+      ? el("button", {class:"fc", type:"button", "aria-label":"Balik kartu", onclick:function(){ fc.flipped = false; renderCards(); }}, [
+          el("span", {class:"pos", text: c.w + " · " + c.pos}),
+          el("span", {class:"w", text: c.id}),
+          el("span", {class:"ex", text: c.ex}),
+          el("span", {class:"hint", text: c.forms && c.forms !== "-" ? "Bentuk lain: " + c.forms : ""})
+        ])
+      : el("button", {class:"fc", type:"button", "aria-label":"Balik kartu", onclick:function(){ fc.flipped = true; renderCards(); }}, [
+          el("span", {class:"pos", text:c.pos + " · " + (fc.idx + 1) + "/" + list.length}),
+          el("span", {class:"w", text:c.w}),
+          el("span", {class:"hint", text:"Ketuk untuk melihat arti dan contoh"})
+        ]);
+    root.appendChild(el("div", {class:"fc-wrap"}, [face,
+      el("div", {class:"row"}, [
+        el("button", {class:"btn", type:"button", text:"Dengar (British)", onclick:function(){ speak(fc.flipped ? c.ex : c.w); }}),
+        el("button", {class:"btn", type:"button", text:"Lewati", onclick:function(){ fc.idx = (fc.idx + 1) % list.length; fc.flipped = false; renderCards(); }})
+      ]),
+      el("div", {class:"row"}, [
+        el("button", {class:"btn", type:"button", text:"Ulangi lagi", onclick:function(){ state.cards[c.w] = 0; logToday(); save(); fc.idx = (fc.idx + 1) % list.length; fc.flipped = false; renderCards(); }}),
+        el("button", {class:"btn primary", type:"button", text:"Hafal", onclick:function(){ state.cards[c.w] = Math.min(3, cardLevel(c.w) + 2); logToday(); save(); if (fc.filter === "belum") { if (fc.idx >= list.length - 1) fc.idx = 0; } else fc.idx = (fc.idx + 1) % list.length; fc.flipped = false; renderCards(); }})
+      ])
+    ]));
+  }
+  var f = el("form", {class:"card form", id:"addform"}, [
+    el("h3", {text:"Tambah kata dari sesi Claude"}),
+    el("label", {for:"nw"}, ["Kata atau frasa", el("input", {id:"nw", type:"text", autocomplete:"off", required:""})]),
+    el("label", {for:"nm"}, ["Arti", el("input", {id:"nm", type:"text", autocomplete:"off", required:""})]),
+    el("label", {for:"ne"}, ["Contoh kalimat", el("input", {id:"ne", type:"text", autocomplete:"off"})]),
+    el("button", {class:"btn", type:"submit", text:"Simpan kata"})
+  ]);
+  f.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var w = $("nw").value.trim(), m = $("nm").value.trim(), e = $("ne").value.trim();
+    if (!w || !m) return;
+    state.extra.push({w:w, pos:"baru", id:m, ex:e || "-", forms:"-", tag:"extra"});
+    save(); toast("Kata ditambahkan."); renderCards();
+  });
+  root.appendChild(f);
+}
+
+/* ---------- View: Kuis ---------- */
+var qz = {mode:null, tag:"Semua", items:[], i:0, score:0, answered:false, picked:-1, wrong:[]};
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function buildVocabQ(kind) {
+  var all = allCards().filter(function (c) { return c.pos !== "baru" || c.id; });
+  return shuffle(all).slice(0, 10).map(function (c) {
+    var others = shuffle(all.filter(function (x) { return x.w !== c.w; })).slice(0, 3);
+    if (kind === "arti") {
+      var opts = shuffle([c].concat(others));
+      return {q:"Apa arti \"" + c.w + "\"?", o:opts.map(function (x) { return x.id; }), a:opts.indexOf(c), e:c.w + " = " + c.id + ". Contoh: " + c.ex};
+    }
+    var esc = function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); };
+    var withEx = all.filter(function (x) { return x.ex && x.ex !== "-" && new RegExp("\\b" + esc(x.w) + "\\b", "i").test(x.ex); });
+    var cc = withEx.length ? withEx[Math.floor(Math.random() * withEx.length)] : c;
+    var oth = shuffle(withEx.filter(function (x) { return x.w !== cc.w; })).slice(0, 3);
+    var ops = shuffle([cc].concat(oth));
+    var re = new RegExp("\\b" + esc(cc.w) + "\\b", "i");
+    return {q:cc.ex.replace(re, "______"), o:ops.map(function (x) { return x.w; }), a:ops.indexOf(cc), e:"Jawaban: " + cc.w + " (" + cc.id + ")."};
+  });
+}
+function startQuiz(mode) {
+  qz.mode = mode; qz.i = 0; qz.score = 0; qz.answered = false; qz.picked = -1; qz.wrong = [];
+  if (mode === "grammar") {
+    var pool = GQ.filter(function (q) { return qz.tag === "Semua" || q.tag === qz.tag; });
+    qz.items = shuffle(pool).slice(0, 10);
+  } else qz.items = buildVocabQ(mode);
+  renderQuiz();
+}
+function renderQuiz() {
+  var root = $("v-kuis"); clear(root);
+  if (!qz.mode) {
+    root.appendChild(el("div", {class:"card"}, [
+      el("h2", {text:"Kuis"}),
+      el("p", {class:"small muted", text:"10 soal per sesi. Setiap jawaban dibahas, jadi salah itu berguna."})
+    ]));
+    var tagBtns = el("div", {class:"seg", role:"group", "aria-label":"Topik grammar"}, GTAGS.map(function (t) {
+      return el("button", {type:"button", text:t, "aria-pressed": String(qz.tag === t), onclick:function(){ qz.tag = t; renderQuiz(); }});
+    }));
+    root.appendChild(el("div", {class:"card"}, [el("h3", {text:"Grammar"}), tagBtns, el("button", {class:"btn primary", type:"button", text:"Mulai kuis grammar", onclick:function(){ startQuiz("grammar"); }})]));
+    root.appendChild(el("div", {class:"card"}, [el("h3", {text:"Vocabulary"}), el("p", {class:"small muted", text:"Dari " + allCards().length + " kata di flashcard."}), el("div", {class:"row"}, [
+      el("button", {class:"btn", type:"button", text:"Kata ke arti", onclick:function(){ startQuiz("arti"); }}),
+      el("button", {class:"btn", type:"button", text:"Isi kalimat", onclick:function(){ startQuiz("kalimat"); }})
+    ])]));
+    return;
+  }
+  if (!qz.items.length) { qz.mode = null; renderQuiz(); return; }
+  if (qz.i >= qz.items.length) {
+    var total = qz.items.length;
+    state.quiz.push({d:iso(new Date()), m:qz.mode === "grammar" ? "Grammar " + qz.tag : (qz.mode === "arti" ? "Vocab arti" : "Vocab kalimat"), s:qz.score, t:total});
+    if (state.quiz.length > 60) state.quiz = state.quiz.slice(-60);
+    logToday(); save();
+    root.appendChild(el("div", {class:"card"}, [
+      el("span", {class:"label", text:"Selesai"}),
+      el("div", {class:"score", text: qz.score + "/" + total}),
+      el("p", {text: qz.score === total ? "Sempurna. Coba topik lain atau kuis campuran." : "Soal yang salah tercatat di bawah. Baca penjelasannya sekali, lalu ulangi kuis."})
+    ]));
+    if (qz.wrong.length) {
+      var wc = el("div", {class:"card"}, [el("h3", {text:"Untuk dipelajari ulang"})]);
+      qz.wrong.forEach(function (q) { wc.appendChild(el("div", {class:"exp"}, [el("p", {class:"q", text:q.q}), el("p", {class:"small", text:"Benar: " + q.o[q.a]}), el("p", {class:"small muted", text:q.e})])); });
+      root.appendChild(wc);
+    }
+    root.appendChild(el("div", {class:"row"}, [
+      el("button", {class:"btn primary", type:"button", text:"Ulangi", onclick:function(){ startQuiz(qz.mode); }}),
+      el("button", {class:"btn", type:"button", text:"Ganti kuis", onclick:function(){ qz.mode = null; renderQuiz(); }})
+    ]));
+    return;
+  }
+  var q = qz.items[qz.i];
+  var card = el("div", {class:"card"}, [el("span", {class:"label", text:"Soal " + (qz.i + 1) + " dari " + qz.items.length + (q.tag ? " · " + q.tag : "")}), el("p", {class:"q", text:q.q})]);
+  var opts = el("div", {class:"opts"});
+  q.o.forEach(function (o, i) {
+    var cls = "opt";
+    if (qz.answered) { if (i === q.a) cls += " right"; else if (i === qz.picked) cls += " wrong"; }
+    var b = el("button", {class:cls, type:"button", text: String.fromCharCode(65 + i) + ". " + o});
+    if (qz.answered) b.disabled = true;
+    b.addEventListener("click", function () {
+      if (qz.answered) return;
+      qz.answered = true; qz.picked = i;
+      if (i === q.a) qz.score++; else qz.wrong.push(q);
+      renderQuiz();
+    });
+    opts.appendChild(b);
+  });
+  card.appendChild(opts);
+  if (qz.answered) {
+    card.appendChild(el("div", {class:"exp"}, [el("p", {class: "small", text: (qz.picked === q.a ? "Benar. " : "Belum tepat. ") + q.e})]));
+    card.appendChild(el("button", {class:"btn primary", type:"button", text: qz.i + 1 >= qz.items.length ? "Lihat skor" : "Soal berikutnya", onclick:function(){ qz.i++; qz.answered = false; qz.picked = -1; renderQuiz(); }}));
+  }
+  root.appendChild(card);
+  root.appendChild(el("button", {class:"btn ghost", type:"button", text:"Hentikan kuis", onclick:function(){ qz.mode = null; renderQuiz(); }}));
+}
+
+/* ---------- View: Progres ---------- */
+function renderProgress() {
+  var root = $("v-progres"); clear(root);
+  var done = 0, tasksDone = 0;
+  for (var d = 1; d <= TOTAL; d++) { var s = dayStatus(d); tasksDone += s; if (s === 3) done++; }
+  var known = allCards().filter(function (c) { return cardLevel(c.w) >= 2; }).length;
+  var qs = state.quiz || [];
+  var avg = qs.length ? Math.round(qs.reduce(function (a, b) { return a + b.s / b.t; }, 0) / qs.length * 100) : null;
+  root.appendChild(el("div", {class:"card"}, [
+    el("h2", {text:"Progres"}),
+    el("div", {class:"grid2"}, [
+      el("div", {class:"stat"}, [el("b", {text:String(streak())}), el("span", {class:"label", text:"Hari beruntun"})]),
+      el("div", {class:"stat"}, [el("b", {text:done + "/30"}), el("span", {class:"label", text:"Hari lengkap"})]),
+      el("div", {class:"stat"}, [el("b", {text:known + "/" + allCards().length}), el("span", {class:"label", text:"Kata hafal"})]),
+      el("div", {class:"stat"}, [el("b", {text: avg === null ? "-" : avg + "%"}), el("span", {class:"label", text:"Rata-rata kuis"})])
+    ]),
+    el("p", {class:"small muted", text:"Hari beruntun menghitung hari belajar berurutan. Hari Minggu tidak memutus rangkaian."})
+  ]));
+  var h = el("div", {class:"card"}, [el("h3", {text:"Kuis terakhir"})]);
+  if (!qs.length) h.appendChild(el("p", {class:"small muted", text:"Belum ada. Kerjakan satu kuis di tab Kuis."}));
+  else { var list = el("div", {class:"hist"}); qs.slice(-8).reverse().forEach(function (x) { list.appendChild(el("div", null, [el("span", {text:x.d + " · " + x.m}), el("b", {text:x.s + "/" + x.t})])); }); h.appendChild(list); }
+  root.appendChild(h);
+  root.appendChild(el("div", {class:"card"}, [
+    el("h3", {text:"Skor evaluasi mingguan"}),
+    el("p", {class:"small muted", text:"Catat skor yang diberikan Claude setiap Sabtu. Ini skor latihan internal, bukan band IELTS resmi."}),
+    evalForm()
+  ]));
+  root.appendChild(el("div", {class:"card"}, [
+    el("h3", {text:"Data"}),
+    el("p", {class:"small muted", text:"Progres di halaman ini tidak otomatis masuk ke chat Claude. Untuk laporan resmi, kirim EXPORT PROGRESS atau LAPORAN PROGRES di chat."}),
+    el("div", {class:"row"}, [el("button", {class:"btn", type:"button", text:"Salin ringkasan progres", onclick:function(){ copyText(summaryText()); }})])
+  ]));
+}
+function evalForm() {
+  var f = el("form", {class:"form"}, [
+    el("label", {for:"ev-w"}, ["Minggu ke", el("input", {id:"ev-w", type:"number", min:"1", max:"4", inputmode:"numeric"})]),
+    el("label", {for:"ev-s"}, ["Skor total (0-100)", el("input", {id:"ev-s", type:"number", min:"0", max:"100", inputmode:"numeric"})]),
+    el("button", {class:"btn", type:"submit", text:"Simpan skor"})
+  ]);
+  f.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var w = parseInt($("ev-w").value, 10), s = parseInt($("ev-s").value, 10);
+    if (!(w >= 1 && w <= 4) || !(s >= 0 && s <= 100)) { toast("Isi minggu 1-4 dan skor 0-100."); return; }
+    state.evals = state.evals || {}; state.evals["w" + w] = s; save(); toast("Skor minggu " + w + " tersimpan."); renderProgress();
+  });
+  var wrap = el("div", {class:"form"});
+  var ev = state.evals || {}; var keys = Object.keys(ev).sort();
+  if (keys.length) { var hist = el("div", {class:"hist"}); keys.forEach(function (k) { hist.appendChild(el("div", null, [el("span", {text:"Minggu " + k.slice(1)}), el("b", {text:String(ev[k])})])); }); wrap.appendChild(hist); }
+  wrap.appendChild(f);
+  return wrap;
+}
+function summaryText() {
+  var done = 0; for (var d = 1; d <= TOTAL; d++) if (dayStatus(d) === 3) done++;
+  var known = allCards().filter(function (c) { return cardLevel(c.w) >= 2; }).length;
+  var qs = state.quiz || [];
+  var last = qs.length ? qs[qs.length - 1] : null;
+  var ev = state.evals || {};
+  var evs = Object.keys(ev).sort().map(function (k) { return "minggu " + k.slice(1) + ": " + ev[k]; }).join(", ");
+  return "Ringkasan dari Study Hub: hari lengkap " + done + "/30, hari beruntun " + streak() + ", kata hafal " + known + "/" + allCards().length +
+    (last ? ", kuis terakhir " + last.m + " " + last.s + "/" + last.t : "") + (evs ? ", skor evaluasi " + evs : "") + ".";
+}
+
+/* ---------- Router ---------- */
+var VIEWS = ["hari-ini","rencana","kartu","kuis","progres"];
+function route() {
+  var h = (location.hash || "").replace("#", "");
+  if (VIEWS.indexOf(h) < 0) h = "hari-ini";
+  VIEWS.forEach(function (v) { $("v-" + v).classList.toggle("on", v === h); });
+  document.querySelectorAll("nav.tabs a").forEach(function (a) { if (a.getAttribute("data-v") === h) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  if (h === "hari-ini") renderToday();
+  if (h === "rencana") renderPlan();
+  if (h === "kartu") renderCards();
+  if (h === "kuis") renderQuiz();
+  if (h === "progres") renderProgress();
+  paintHeader();
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+
+/* ---------- Boot ---------- */
+loadLocal();
+viewDay = Math.min(Math.max(todayDay(), 1), TOTAL);
+paintSync();
+route();
+
+/* Sinkron ke akun (opsional). Halaman tetap berjalan tanpa ini. */
+(function () {
+  if (!(window.claude && window.claude.use)) return;
+  Promise.all([window.claude.use("user"), window.claude.use("db")]).then(function (r) {
+    var user = r[0], db = r[1];
+    if (!user || !db) return null;
+    return user.id().then(function (id) {
+      if (!id) return null;
+      dbDoc = db.doc("data/users/" + id + "/progress");
+      return dbDoc.get();
+    });
+  }).then(function (snap) {
+    if (!dbDoc) return;
+    if (snap && snap.exists) {
+      try {
+        var remote = JSON.parse(snap.data().state);
+        var rUp = snap.data().updated || 0;
+        if (rUp > (state.updated || 0)) { state = Object.assign({checks:{}, log:{}, cards:{}, quiz:[], extra:[], updated:0}, remote); try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} route(); }
+        else if ((state.updated || 0) > rUp) pushDb();
+      } catch (e) {}
+    } else if (state.updated) pushDb();
+    dbMode = "db"; paintSync();
+  }).catch(function () { dbMode = "local"; paintSync(); });
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./service-worker.js").catch(function (err) {
+      console.warn("Service worker belum terpasang:", err);
+    });
+  });
+}
+</script>
+</body></html>

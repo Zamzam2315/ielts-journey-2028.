@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "IELTS Journey 2028",
+  "short_name": "IELTS Journey",
+  "description": "Media belajar IELTS pribadi dengan rencana 30 hari, flashcard, kuis, dan pelacakan progres.",
+  "lang": "id-ID",
+  "start_url": "./index.html#hari-ini",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EDF0F5",
+  "theme_color": "#14213D",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

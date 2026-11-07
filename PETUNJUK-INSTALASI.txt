@@ -1,0 +1,25 @@
+IELTS Journey 2028 — Paket PWA Android
+
+ISI PAKET
+- index.html: aplikasi IELTS kamu (fitur dan konten asli dipertahankan)
+- manifest.webmanifest: identitas aplikasi dan mode standalone
+- service-worker.js: cache dasar agar aplikasi dapat dibuka kembali saat offline
+- icons/: ikon aplikasi
+
+CARA MEMASANG DI ANDROID
+1. Upload seluruh isi folder ini ke hosting HTTPS (misalnya GitHub Pages atau Netlify).
+   Jangan hanya upload index.html; semua file/folder harus ikut.
+2. Buka alamat HTTPS hasil hosting di Google Chrome Android.
+3. Pilih menu ⋮ > "Tambahkan ke layar utama" atau "Install app" (nama menu bisa berbeda).
+4. Ikuti konfirmasi. Ikon IELTS Journey akan muncul di layar utama.
+
+CATATAN OFFLINE
+- Setelah aplikasi dibuka setidaknya sekali saat online dan service worker selesai terpasang,
+  halaman utama dan aset lokal yang terdaftar akan tersimpan untuk dibuka kembali offline.
+- Google Fonts dan tautan BBC/layanan eksternal tetap membutuhkan internet pada akses pertama
+  atau saat membuka layanan tersebut.
+- Progres belajar disimpan di localStorage browser/perangkat ini. Data tidak otomatis
+  tersinkron ke perangkat lain; integrasi akun Claude hanya berjalan jika lingkungan Claude
+  menyediakan API window.claude.
+- PWA membutuhkan HTTPS (atau localhost) agar service worker dan instalasi bekerja.
+  Membuka index.html langsung dari file manager tidak cukup untuk memasang PWA.
